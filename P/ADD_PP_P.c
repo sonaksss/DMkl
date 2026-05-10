@@ -17,31 +17,6 @@ static int is_zero_q(NUMBQ* q) {
     return POZ_Z_D(&q->a) == 0;
 }
 
-/*static NUMBQ* zero_q(void) {
-    NUMBQ* zero = (NUMBQ*)malloc(sizeof(NUMBQ));
-    if (!zero) return NULL;
-    
-    zero->b.n = 1;
-    zero->b.A = (int*)malloc(sizeof(int));
-    if (!zero->b.A) {
-        free(zero);
-        return NULL;
-    }
-    zero->b.A[0] = 1;
-    
-    zero->a.b = 0;
-    zero->a.n = 1;
-    zero->a.A = (int*)malloc(sizeof(int));
-    if (!zero->a.A) {
-        free(zero->b.A);
-        free(zero);
-        return NULL;
-    }
-    zero->a.A[0] = 0;
-    
-    return zero;
-}*/
-
 static NUMBQ* copy_q(NUMBQ* src) {
     if (!src) return NULL;
     

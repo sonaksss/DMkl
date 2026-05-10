@@ -83,7 +83,6 @@ NUMBP* MUL_PP_P(const NUMBP* A, const NUMBP* B) {
     if (!A || !B || !A->C || !B->C || A->m < 0 || B->m < 0)
         return NULL;
 
-    /* Выделение памяти под результат */
     NUMBP* result = (NUMBP*)malloc(sizeof(NUMBP));
     if (!result)
         return NULL;
@@ -95,7 +94,6 @@ NUMBP* MUL_PP_P(const NUMBP* A, const NUMBP* B) {
         return NULL;
     }
 
-    /* Инициализация всех коэффициентов нулями */
     for (int i = 0; i <= result->m; i++) {
         NUMBQ* zero = createZeroQ_mul();
         if (!zero) {
@@ -112,10 +110,8 @@ NUMBP* MUL_PP_P(const NUMBP* A, const NUMBP* B) {
         free(zero);
     }
 
-    /* Основной цикл умножения (свёртка коэффициентов) */
     for (int i = 0; i <= A->m; i++) {
         for (int j = 0; j <= B->m; j++) {
-            /* term = A[i] * B[j] */
             NUMBQ* term = MUL_QQ_Q(&A->C[i], &B->C[j]);
             if (!term) {
                 for (int k = 0; k <= result->m; k++) {
@@ -127,7 +123,6 @@ NUMBP* MUL_PP_P(const NUMBP* A, const NUMBP* B) {
                 return NULL;
             }
 
-            /* sum = result[i + j] + term */
             NUMBQ* sum = ADD_QQ_Q(&result->C[i + j], term);
             freeQ_mul(term);
 
@@ -141,12 +136,11 @@ NUMBP* MUL_PP_P(const NUMBP* A, const NUMBP* B) {
                 return NULL;
             }
 
-            /* Заменяем старый коэффициент новым */
             free(result->C[i + j].a.A);
             free(result->C[i + j].b.A);
 
             result->C[i + j] = *sum;
-            free(sum);  /* освобождаем только структуру-обёртку */
+            free(sum);
         }
     }
 

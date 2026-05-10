@@ -22,7 +22,6 @@ NUMBZ* DIV_ZZ_Z(NUMBZ* a, NUMBZ* b) {
     if (!a || !b || !a->A || !b->A || a->n <= 0 || b->n <= 0) return NULL;
     if (isZeroZ(b)) return NULL;
 
-    /* Если делимое 0, частное 0 */
     if (isZeroZ(a)) {
         NUMBZ* zero = (NUMBZ*)malloc(sizeof(NUMBZ));
         if (!zero) return NULL;
@@ -33,21 +32,18 @@ NUMBZ* DIV_ZZ_Z(NUMBZ* a, NUMBZ* b) {
         return zero;
     }
 
-    /* 1. Модуль делимого |a| */
     NUMBZ* absA_z = ABS_Z_Z(a);
     if (!absA_z) return NULL;
     NUMBN* natA = TRANS_Z_N(absA_z);
     free(absA_z->A); free(absA_z);
     if (!natA) return NULL;
 
-    /* 2. Модуль делителя |b| */
     NUMBZ* absB_z = ABS_Z_Z(b);
     if (!absB_z) { free(natA->A); free(natA); return NULL; }
     NUMBN* natB = TRANS_Z_N(absB_z);
     free(absB_z->A); free(absB_z);
     if (!natB) { free(natA->A); free(natA); return NULL; }
 
-    /* 3. Натуральные частное и остаток */
     NUMBN* natQ = DIV_NN_N(natA, natB);
     NUMBN* natR = MOD_NN_N(natA, natB);
     free(natA->A); free(natA);
@@ -59,19 +55,18 @@ NUMBZ* DIV_ZZ_Z(NUMBZ* a, NUMBZ* b) {
         return NULL;
     }
 
-    int r_not_zero = !(natR->n == 1 && natR->A[0] == 0);  /* остаток != 0 */
+    int r_not_zero = !(natR->n == 1 && natR->A[0] == 0);
     free(natR->A); free(natR);
 
     NUMBZ* Q = NULL;
-    if (a->b == 0) {   /* a >= 0 */
+    if (a->b == 0) {
         Q = (NUMBZ*)malloc(sizeof(NUMBZ));
         if (!Q) { free(natQ->A); free(natQ); free(natB->A); free(natB); return NULL; }
         Q->b = 0;
         Q->n = natQ->n;
-        Q->A = natQ->A;   /* забираем массив */
+        Q->A = natQ->A;
         free(natQ);
-    } else {            /* a < 0 */
-        /* q = -(natQ + (natR != 0)) */
+    } else {
         NUMBN* tempQ = natQ;
         if (r_not_zero) {
             NUMBN* incremented = ADD_1N_N(natQ);
@@ -81,7 +76,7 @@ NUMBZ* DIV_ZZ_Z(NUMBZ* a, NUMBZ* b) {
         }
         Q = (NUMBZ*)malloc(sizeof(NUMBZ));
         if (!Q) { free(tempQ->A); free(tempQ); free(natB->A); free(natB); return NULL; }
-        Q->b = 1;          /* минус */
+        Q->b = 1;
         Q->n = tempQ->n;
         Q->A = tempQ->A;
         free(tempQ);
@@ -89,7 +84,6 @@ NUMBZ* DIV_ZZ_Z(NUMBZ* a, NUMBZ* b) {
 
     free(natB->A); free(natB);
 
-    /* 4. Учёт знака делителя: если b < 0, умножаем Q на -1 */
     NUMBZ* result = NULL;
     if (b->b == 0) {
         result = Q;

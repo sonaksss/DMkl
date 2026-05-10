@@ -25,19 +25,16 @@
     NULL   — при ошибке
 */
 NUMBQ* ADD_QQ_Q(NUMBQ* first, NUMBQ* second) {
-    /* Проверка входных данных */
     if (!first || !second || !first->a.A || !second->a.A ||
         !first->b.A || !second->b.A ||
         first->b.n <= 0 || second->b.n <= 0) {
         return NULL;
     }
 
-    /* Находим НОК знаменателей */
     NUMBN* lcm = LCM_NN_N(&first->b, &second->b);
     if (!lcm)
         return NULL;
 
-    /* Вычисляем множители для приведения к общему знаменателю */
     NUMBN* factor1 = DIV_NN_N(lcm, &first->b);
     NUMBN* factor2 = DIV_NN_N(lcm, &second->b);
 
@@ -55,7 +52,6 @@ NUMBQ* ADD_QQ_Q(NUMBQ* first, NUMBQ* second) {
         return NULL;
     }
 
-    /* Преобразуем множители в целые числа */
     NUMBZ* factor1_z = TRANS_N_Z(factor1);
     NUMBZ* factor2_z = TRANS_N_Z(factor2);
 
@@ -78,7 +74,6 @@ NUMBQ* ADD_QQ_Q(NUMBQ* first, NUMBQ* second) {
         return NULL;
     }
 
-    /* Вычисляем приведённые числители */
     NUMBZ* term1 = MUL_ZZ_Z(&first->a, factor1_z);
     NUMBZ* term2 = MUL_ZZ_Z(&second->a, factor2_z);
 
@@ -101,7 +96,6 @@ NUMBQ* ADD_QQ_Q(NUMBQ* first, NUMBQ* second) {
         return NULL;
     }
 
-    /* Складываем числители */
     NUMBZ* numerator = ADD_ZZ_Z(term1, term2);
 
     free(term1->A);
@@ -115,18 +109,15 @@ NUMBQ* ADD_QQ_Q(NUMBQ* first, NUMBQ* second) {
         return NULL;
     }
 
-    /* Формируем временную дробь */
     NUMBQ rawFraction;
     rawFraction.a = *numerator;
-    free(numerator);   /* освобождаем только структуру */
+    free(numerator);
 
     rawFraction.b = *lcm;
-    free(lcm);         /* освобождаем только структуру */
+    free(lcm);
 
-    /* Сокращаем результат */
     NUMBQ* result = RED_Q_Q(&rawFraction);
 
-    /* Освобождаем временные данные */
     free(rawFraction.a.A);
     free(rawFraction.b.A);
 

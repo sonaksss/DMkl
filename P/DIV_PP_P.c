@@ -96,7 +96,6 @@ static void freeQ(NUMBQ* q) {
     free(q);
 }
 
-/* Преобразование NUMBN* в int (степень многочлена) */
 static int numbn_to_int(NUMBN* num) {
     if (!num || num->n > 10) return -1;
     int res = 0, mult = 1;

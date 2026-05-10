@@ -73,7 +73,6 @@ static NUMBP* deepCopyPolynomial(NUMBP* p) {
     }
 
     for (int i = 0; i <= p->m; i++) {
-        /* Копирование числителя */
         copy->C[i].a.b = p->C[i].a.b;
         copy->C[i].a.n = p->C[i].a.n;
         copy->C[i].a.A = (int*)malloc(p->C[i].a.n * sizeof(int));
@@ -89,7 +88,6 @@ static NUMBP* deepCopyPolynomial(NUMBP* p) {
         memcpy(copy->C[i].a.A, p->C[i].a.A,
                p->C[i].a.n * sizeof(int));
 
-        /* Копирование знаменателя */
         copy->C[i].b.n = p->C[i].b.n;
         copy->C[i].b.A = (int*)malloc(p->C[i].b.n * sizeof(int));
         if (!copy->C[i].b.A) {
