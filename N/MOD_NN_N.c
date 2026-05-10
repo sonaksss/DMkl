@@ -64,32 +64,22 @@ static void freeNumbn(NUMBN* num) {
   В случае ошибки возвращает NULL.
 */
 NUMBN* MOD_NN_N(NUMBN* a, NUMBN* b) {
-    /* Шаг 1: проверка входных данных */
     if (!a || !a->A || a->n <= 0) return NULL;
     if (!b || !b->A || b->n <= 0) return NULL;
 
-    /* Шаг 2: вычислить неполное частное q = a / b */
     NUMBN* q = DIV_NN_N(a, b);
     if (!q) return NULL;
 
-    /* Начальное значение остатка r = копия a */
     NUMBN* r = copyNumbn(a);
     if (!r) {
         freeNumbn(q);
         return NULL;
     }
 
-    /*
-      Шаг 3: вычесть из r каждое слагаемое q[i] * b * 10^i.
-      A[0] — самая младшая цифра (позиция 0),
-      A[n-1] — самая старшая.
-      Для сдвига b на i позиций создаём b_shifted с i нулями в начале массива.
-    */
     for (int i = 0; i < q->n; i++) {
         int digit = q->A[i];
-        if (digit == 0) continue; /* нет вклада — пропустить */
+        if (digit == 0) continue;
 
-        /* Создать b_shifted = b * 10^i: скопировать b и добавить i нулей снизу */
         NUMBN* b_shifted = (NUMBN*)malloc(sizeof(NUMBN));
         if (!b_shifted) {
             freeNumbn(q);
@@ -105,12 +95,10 @@ NUMBN* MOD_NN_N(NUMBN* a, NUMBN* b) {
             return NULL;
         }
 
-        /* Заполнить нулями младшие i позиций (сдвиг) */
         for (int j = 0; j < i; j++) b_shifted->A[j] = 0;
-        /* Скопировать цифры b в старшие позиции */
+
         for (int j = 0; j < b->n; j++) b_shifted->A[i + j] = b->A[j];
 
-        /* r = r - b_shifted * digit */
         NUMBN* r_new = SUB_NDN_N(r, b_shifted, digit);
         freeNumbn(b_shifted);
 
@@ -124,7 +112,6 @@ NUMBN* MOD_NN_N(NUMBN* a, NUMBN* b) {
         r = r_new;
     }
 
-    /* Шаг 4: освободить частное и вернуть остаток */
     freeNumbn(q);
     return r;
 }

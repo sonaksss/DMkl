@@ -13,21 +13,18 @@
 #include "../include_DM.h"
 
 NUMBN* SUB_NN_N(NUMBN* a, NUMBN* b) {
-    // Проверка входных данных
     if (!a || !b || !a->A || !b->A || a->n <= 0 || b->n <= 0) {
         return NULL;
     }
     
-    // Проверка, что a >= b
     int cmp = COM_NN_D(a, b);
     if (cmp == -1) {
         return NULL;
     }
-    if (cmp == 1) {  // a < b
+    if (cmp == 1) {
         return NULL;
     }
     
-    // Создаём результат
     NUMBN* result = (NUMBN*)malloc(sizeof(NUMBN));
     if (!result) return NULL;
     
@@ -38,12 +35,10 @@ NUMBN* SUB_NN_N(NUMBN* a, NUMBN* b) {
         return NULL;
     }
     
-    // Копируем цифры a в результат
     for (int i = 0; i < a->n; i++) {
         result->A[i] = a->A[i];
     }
     
-    // Вычитание столбиком
     int borrow = 0;
     for (int i = 0; i < b->n; i++) {
         result->A[i] = result->A[i] - b->A[i] - borrow;
@@ -54,7 +49,6 @@ NUMBN* SUB_NN_N(NUMBN* a, NUMBN* b) {
         }
     }
     
-    // Продолжаем вычитание для оставшихся разрядов
     for (int i = b->n; i < a->n && borrow; i++) {
         result->A[i] = result->A[i] - borrow;
         borrow = 0;
@@ -64,7 +58,6 @@ NUMBN* SUB_NN_N(NUMBN* a, NUMBN* b) {
         }
     }
     
-    // Удаляем ведущие нули
     int new_n = result->n;
     while (new_n > 1 && result->A[new_n - 1] == 0) {
         new_n--;

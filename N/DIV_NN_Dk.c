@@ -33,10 +33,10 @@ int DIV_NN_Dk(NUMBN* A, NUMBN* B) {
     
     int cmp = COM_NN_D(A, B);
     if (cmp == -1) {
-        return 0;  // Ошибка в COM_NN_D
+        return 0;
     }
     if (cmp == 1) {
-        return 0;  // A < B
+        return 0;
     }
     
     int k = A->n - B->n;
@@ -51,9 +51,8 @@ int DIV_NN_Dk(NUMBN* A, NUMBN* B) {
             free(Bk->A); free(Bk);
             return 0;
         }
-        if (cmp != 1) break;  // A >= Bk
+        if (cmp != 1) break;
         
-        // A < Bk
         free(Bk->A); free(Bk);
         if (k == 0) return 0;
         k--;
@@ -72,7 +71,7 @@ int DIV_NN_Dk(NUMBN* A, NUMBN* B) {
             free(Bk->A); free(Bk);
             return 0;
         }
-        if (cmp != 2) {  // product <= A
+        if (cmp != 2) {
             int result = q;
             free(Bk->A); free(Bk);
             return result;

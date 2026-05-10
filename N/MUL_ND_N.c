@@ -34,7 +34,6 @@ NUMBN* MUL_ND_N(NUMBN* a, int d) {
     if (d < 0 || d > 9)
         return NULL;
 
-    /* Случай умножения на 0: результат — ноль */
     if (d == 0) {
         NUMBN* result = (NUMBN*)malloc(sizeof(NUMBN));
         if (!result) return NULL;
@@ -45,7 +44,6 @@ NUMBN* MUL_ND_N(NUMBN* a, int d) {
         return result;
     }
 
-    /* Результирующее число: максимально n+1 цифр (из-за переноса) */
     NUMBN* result = (NUMBN*)malloc(sizeof(NUMBN));
     if (!result) return NULL;
 
@@ -55,17 +53,14 @@ NUMBN* MUL_ND_N(NUMBN* a, int d) {
 
     int carry = 0;
 
-    /* Умножаем каждую цифру числа на d, учитываем перенос */
     for (int i = 0; i < a->n; i++) {
         int product = a->A[i] * d + carry;
         result->A[i] = product % 10;
         carry = product / 10;
     }
 
-    /* Записываем оставшийся перенос в старшую позицию */
     result->A[a->n] = carry;
 
-    /* Убираем ведущие нули, оставляя минимум одну цифру */
     while (result->n > 1 && result->A[result->n - 1] == 0)
         result->n--;
 

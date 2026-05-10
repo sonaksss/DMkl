@@ -5,7 +5,6 @@
 
 #include "../include_DM.h"
 
-// Создаёт копию натурального числа
 static NUMBN* copyN(const NUMBN* src) {
     if (!src) return NULL;
     NUMBN* dst = (NUMBN*)malloc(sizeof(NUMBN));
@@ -20,7 +19,6 @@ static NUMBN* copyN(const NUMBN* src) {
 NUMBN* DIV_NN_N(NUMBN* A, NUMBN* B) {
     if (!A || !B) return NULL;
 
-    // Создаём 0
     NUMBN* zero = (NUMBN*)malloc(sizeof(NUMBN));
     if (!zero) return NULL;
     zero->n = 1;
@@ -33,22 +31,21 @@ NUMBN* DIV_NN_N(NUMBN* A, NUMBN* B) {
         free(zero->A); free(zero);
         return NULL;
     }
-    if (cmp == 1) return zero;  // A < B
+    if (cmp == 1) return zero;
 
-    NUMBN* R = copyN(A);   // остаток
+    NUMBN* R = copyN(A);
     if (!R) {
         free(zero->A); free(zero);
         return NULL;
     }
-    NUMBN* Q = copyN(zero); // частное
+    NUMBN* Q = copyN(zero);
     if (!Q) {
         free(R->A); free(R);
         free(zero->A); free(zero);
         return NULL;
     }
 
-    while (COM_NN_D(R, B) != 1) {   // R >= B
-        // Определяем сдвиг k
+    while (COM_NN_D(R, B) != 1) {
         int k = R->n - B->n;
         NUMBN* Bk = MUL_Nk_N(B, k);
         if (!Bk) {
@@ -57,7 +54,7 @@ NUMBN* DIV_NN_N(NUMBN* A, NUMBN* B) {
             free(zero->A); free(zero);
             return NULL;
         }
-        while (k >= 0 && COM_NN_D(R, Bk) == 1) {  // R < Bk
+        while (k >= 0 && COM_NN_D(R, Bk) == 1) {
             int cmpBk = COM_NN_D(R, Bk);
             if (cmpBk == -1) {
                 free(Bk->A); free(Bk);
@@ -86,7 +83,6 @@ NUMBN* DIV_NN_N(NUMBN* A, NUMBN* B) {
             break;
         }
 
-        // Цифра q
         int q = DIV_NN_Dk(R, B);
         if (q == 0) {
             free(Bk->A); free(Bk);
@@ -97,7 +93,6 @@ NUMBN* DIV_NN_N(NUMBN* A, NUMBN* B) {
         }
         free(Bk->A); free(Bk);
 
-        // Вычитаем q * (B * 10^k)
         NUMBN* shiftedB = MUL_Nk_N(B, k);
         if (!shiftedB) {
             free(R->A); free(R);
@@ -117,7 +112,6 @@ NUMBN* DIV_NN_N(NUMBN* A, NUMBN* B) {
         free(shiftedB->A); free(shiftedB);
         R = newR;
 
-        // Добавляем q * 10^k к Q
         NUMBN* qNum = (NUMBN*)malloc(sizeof(NUMBN));
         if (!qNum) {
             free(R->A); free(R);

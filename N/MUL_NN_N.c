@@ -20,12 +20,10 @@
 #include "../include_DM.h"
 
 NUMBN* MUL_NN_N(NUMBN* a, NUMBN* b) {
-    // Проверка входных данных
     if (!a || !b || !a->A || !b->A || a->n <= 0 || b->n <= 0) {
         return NULL;
     }
 
-    // Создаём результат, начальное значение 0
     NUMBN* result = (NUMBN*)malloc(sizeof(NUMBN));
     if (!result) return NULL;
 
@@ -37,12 +35,10 @@ NUMBN* MUL_NN_N(NUMBN* a, NUMBN* b) {
     }
     result->A[0] = 0;
 
-    // Перебираем все цифры числа a (от младшей к старшей)
     for (int i = 0; i < a->n; i++) {
         int digit = a->A[i];
-        if (digit == 0) continue;  // ничего не добавляем
+        if (digit == 0) continue;
 
-        // Умножаем b на цифру a->A[i]
         NUMBN* temp = MUL_ND_N(b, digit);
         if (!temp) {
             free(result->A);
@@ -50,7 +46,6 @@ NUMBN* MUL_NN_N(NUMBN* a, NUMBN* b) {
             return NULL;
         }
 
-        // Сдвигаем на i десятичных разрядов (умножаем на 10^i)
         NUMBN* shifted = MUL_Nk_N(temp, i);
         free(temp->A);
         free(temp);
@@ -60,7 +55,6 @@ NUMBN* MUL_NN_N(NUMBN* a, NUMBN* b) {
             return NULL;
         }
 
-        // Прибавляем к результату
         NUMBN* new_result = ADD_NN_N(result, shifted);
         free(result->A);
         free(result);
@@ -72,7 +66,6 @@ NUMBN* MUL_NN_N(NUMBN* a, NUMBN* b) {
         result = new_result;
     }
 
-    // Удаление ведущих нулей (если они есть) – результат уже канонический, но на всякий случай
     int new_n = result->n;
     while (new_n > 1 && result->A[new_n - 1] == 0) {
         new_n--;

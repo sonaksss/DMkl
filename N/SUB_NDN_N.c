@@ -25,7 +25,6 @@ NUMBN* SUB_NDN_N(NUMBN* a, NUMBN* b, int d) {
     if (b == NULL || b->A == NULL|| b->n <= 0) return NULL;
     if (d < 0 || d > 9) return NULL;
 
-    /* d == 0: a - 0 = a, возвращаем копию a */
     if (d == 0) {
         NUMBN* result = (NUMBN*)malloc(sizeof(NUMBN));
         if (!result) return NULL;
@@ -36,20 +35,17 @@ NUMBN* SUB_NDN_N(NUMBN* a, NUMBN* b, int d) {
         return result;
     }
 
-    /* Вычислить b * d через обновлённый MUL_ND_N, возвращающий указатель */
     NUMBN* bd = MUL_ND_N(b, d);
     if (bd == NULL) return NULL;
     
     int cmp = COM_NN_D(a, bd);
 
-    /* Убедиться, что a >= b*d, иначе нарушено предусловие */
     if (cmp == -1 || cmp == 1) {
         free(bd->A);
         free(bd);
         return NULL;
     }
 
-    /* Вычислить a - b*d */
     NUMBN* result = SUB_NN_N(a, bd);
     free(bd->A);
     free(bd);

@@ -15,13 +15,11 @@
 
 
 int COM_NN_D(NUMBN* fNumb, NUMBN* sNumb) {
-    // Проверка входных данных
     if (!fNumb || !sNumb || !fNumb->A || !sNumb->A || 
         fNumb->n <= 0 || sNumb->n <= 0) {
         return -1;
     }
     
-    // Сравнение длин
     if (fNumb->n > sNumb->n) {
         return 2;
     }
@@ -29,16 +27,14 @@ int COM_NN_D(NUMBN* fNumb, NUMBN* sNumb) {
         return 1;
     }
     
-    // Одинаковая длина - сравниваем по цифрам от старшего к младшему
     for (int i = fNumb->n - 1; i >= 0; i--) {
         if (fNumb->A[i] > sNumb->A[i]) {
-            return 2;  // первое больше
+            return 2;
         }
         if (fNumb->A[i] < sNumb->A[i]) {
-            return 1;  // первое меньше
+            return 1;
         }
     }
     
-    // Все цифры равны
     return 0;
 }
