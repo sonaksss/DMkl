@@ -306,52 +306,137 @@ NUMBQ* inputQ(const char* prompt) {
 
 NUMBP* inputP(const char* prompt) {
     printf("%s\n", prompt);
-    printf("Введите степень многочлена: ");
+    printf("Введите степень многочлена: "); fflush(stdout);
 
     int degree;
-    if (scanf("%d", &degree) != 1) {
+    if (scanf("%d", &degree) != 1 || degree < 0) {
         printf("ОШИБКА: степень должна быть целым неотрицательным числом\n");
+        while (getchar() != '\n');
         exit(1);
     }
     while (getchar() != '\n');
 
-    if (degree < 0) {
-        printf("ОШИБКА: степень многочлена не может быть отрицательной\n");
-        exit(1);
-    }
-
+    /* Выделяем массив коэффициентов, заполняем нулями */
     NUMBP* result = (NUMBP*)malloc(sizeof(NUMBP));
     if (!result) { printf("ОШИБКА: нет памяти\n"); exit(1); }
     result->m = degree;
     result->C = (NUMBQ*)malloc((degree + 1) * sizeof(NUMBQ));
     if (!result->C) { free(result); printf("ОШИБКА: нет памяти\n"); exit(1); }
 
-    printf("Введите коэффициенты (от старшей степени к младшей):\n");
-    for (int i = degree; i >= 0; i--) {
-        char coef_prompt[64];
-        snprintf(coef_prompt, sizeof(coef_prompt), "  Коэффициент при x^%d: ", i);
-        NUMBQ* coef = inputQ(coef_prompt);
-        if (isErrorQ(coef)) {
-            printf("ОШИБКА: некорректный коэффициент\n");
-            for (int j = degree; j > i; j--) {
-                free(result->C[j].a.A);
-                free(result->C[j].b.A);
-            }
-            free(result->C); free(result); exit(1);
+    /* Инициализируем все коэффициенты нулём (0/1) */
+    for (int i = 0; i <= degree; i++) {
+        result->C[i].a.b = 0;
+        result->C[i].a.n = 1;
+        result->C[i].a.A = (int*)calloc(1, sizeof(int));
+        result->C[i].b.n = 1;
+        result->C[i].b.A = (int*)malloc(sizeof(int));
+        if (!result->C[i].a.A || !result->C[i].b.A) {
+            printf("ОШИБКА: нет памяти\n"); exit(1);
         }
-        result->C[i] = *coef;
-        free(coef);
+        result->C[i].b.A[0] = 1;
     }
 
-    /* Убираем ведущие нули */
-    while (result->m > 0) {
-        int coef_zero = (result->C[result->m].a.n == 1 &&
-                         result->C[result->m].a.A[0] == 0);
-        if (!coef_zero) break;
-        free(result->C[result->m].a.A);
-        free(result->C[result->m].b.A);
-        result->m--;
+    printf("Введите ненулевые коэффициенты (формат: степень коэффициент, например: 1000 1)\n");
+    printf("Введите пустую строку для завершения.\n");
+
+    char line[4096];
+    while (1) {
+        printf("  > "); fflush(stdout);
+        if (!fgets(line, sizeof(line), stdin)) break;
+
+        int blank = 1;
+        for (int i = 0; line[i] && line[i] != '\n'; i++) {
+            if (line[i] != ' ' && line[i] != '\t') { blank = 0; break; }
+        }
+        if (blank) break;
+
+        int power;
+        int consumed = 0;
+        if (sscanf(line, "%d %n", &power, &consumed) != 1) {
+            printf("  ОШИБКА: ожидается формат «степень коэффициент»\n");
+            continue;
+        }
+        if (power < 0 || power > degree) {
+            printf("  ОШИБКА: степень должна быть от 0 до %d\n", degree);
+            continue;
+        }
+
+
+        char coef_str[4000];
+        strncpy(coef_str, line + consumed, sizeof(coef_str) - 1);
+        coef_str[sizeof(coef_str) - 1] = '\0';
+
+        size_t L = strlen(coef_str);
+        while (L > 0 && (coef_str[L-1] == '\n' || coef_str[L-1] == '\r'))
+            coef_str[--L] = '\0';
+
+        if (L == 0) {
+            printf("  ОШИБКА: не указан коэффициент\n");
+            continue;
+        }
+
+
+        int idx = 0, sign = 0;
+        if (coef_str[0] == '+') idx++;
+        else if (coef_str[0] == '-') { sign = 1; idx++; }
+
+
+        int slash = -1;
+        for (int i = idx; coef_str[i]; i++) {
+            if (coef_str[i] == '/') { slash = i; break; }
+        }
+
+        char num_buf[2000] = {0}, den_buf[2000] = "1";
+        if (slash == -1) {
+            strncpy(num_buf, coef_str + idx, sizeof(num_buf) - 1);
+        } else {
+            strncpy(num_buf, coef_str + idx, slash - idx);
+            num_buf[slash - idx] = '\0';
+            strncpy(den_buf, coef_str + slash + 1, sizeof(den_buf) - 1);
+        }
+
+        int bad = 0;
+        for (int i = 0; num_buf[i]; i++) if (!isdigit((unsigned char)num_buf[i])) { bad=1; break; }
+        for (int i = 0; den_buf[i]; i++) if (!isdigit((unsigned char)den_buf[i])) { bad=1; break; }
+        if (bad || strlen(num_buf) == 0) {
+            printf("  ОШИБКА: некорректный коэффициент\n"); continue;
+        }
+        if (den_buf[0] == '0' && strlen(den_buf) == 1) {
+            printf("  ОШИБКА: знаменатель не может быть 0\n"); continue;
+        }
+
+        int ns = 0, ds = 0;
+        while (ns < (int)strlen(num_buf)-1 && num_buf[ns]=='0') ns++;
+        while (ds < (int)strlen(den_buf)-1 && den_buf[ds]=='0') ds++;
+
+        int nlen = strlen(num_buf) - ns;
+        int dlen = strlen(den_buf) - ds;
+
+        free(result->C[power].a.A);
+        free(result->C[power].b.A);
+
+        result->C[power].a.b = (nlen==1 && num_buf[ns]=='0') ? 0 : sign;
+        result->C[power].a.n = nlen;
+        result->C[power].a.A = (int*)malloc(nlen * sizeof(int));
+        result->C[power].b.n = dlen;
+        result->C[power].b.A = (int*)malloc(dlen * sizeof(int));
+        if (!result->C[power].a.A || !result->C[power].b.A) {
+            printf("ОШИБКА: нет памяти\n"); exit(1);
+        }
+        for (int i = 0; i < nlen; i++)
+            result->C[power].a.A[i] = num_buf[nlen - 1 - i + ns] - '0';
+        for (int i = 0; i < dlen; i++)
+            result->C[power].b.A[i] = den_buf[dlen - 1 - i + ds] - '0';
     }
+
+    while (result->m > 0) {
+        if (result->C[result->m].a.n == 1 && result->C[result->m].a.A[0] == 0) {
+            free(result->C[result->m].a.A);
+            free(result->C[result->m].b.A);
+            result->m--;
+        } else break;
+    }
+
     return result;
 }
 
@@ -885,8 +970,8 @@ void menuP(void) {
         NUMBP* a = inputP("Введите многочлен: ");
         int k;
         printf("Введите k: ");
-        if (scanf("%d", &k) != 1 || k < 0) {
-            printf("ОШИБКА: k >= 0\n"); freeNUMBP(a); exit(1);
+        if (scanf("%d", &k) != 1) {
+            printf("ОШИБКA\n"); freeNUMBP(a); exit(1);
         }
         while (getchar() != '\n');
         NUMBP* res = MUL_Pxk_P(a, k);
@@ -966,3 +1051,4 @@ void menuP(void) {
         exit(1);
     }
 }
+
