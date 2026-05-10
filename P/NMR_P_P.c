@@ -162,6 +162,7 @@ NUMBP* NMR_P_P(NUMBP* p) {
 
     /* Делим P на НОД(P, P') */
     NUMBP* result = DIV_PP_P(p, gcd);
+    if (!result) return NULL;
     freeP(gcd);
 
     return result;

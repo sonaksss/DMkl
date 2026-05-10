@@ -112,7 +112,6 @@ static int* inputString(int* len) {
 
     if (*len == 0) { free(arr); return NULL; }
 
-    /* Удаляем ведущие нули */
     int start = 0;
     while (start < *len - 1 && arr[start] == '0') start++;
 
@@ -127,10 +126,6 @@ static int* inputString(int* len) {
     return numb;
 }
 
-/*
-  inputZString — считывает целое число со знаком.
-  ИСПРАВЛЕНО: убрано дублированное объявление.
-*/
 static NUMBZ* inputZString(const char* prompt) {
     printf("%s", prompt);
 
@@ -525,13 +520,6 @@ void printP(NUMBP* poly) {
     if (first) printf("0");
 }
 
-
-/* ========================================================================
-   ИСПРАВЛЕНО: во всех меню двузначные операции теперь читаются как строка
-   (не как одиночный char), поэтому scanf читает int, а не char.
-   case-ветки заменены на if/else if по числовому значению.
-   ======================================================================== */
-
 /* ========== Меню для натуральных чисел ========== */
 void menuN(void) {
     printf("\n========== НАТУРАЛЬНЫЕ ЧИСЛА ==========\n");
@@ -552,7 +540,6 @@ void menuN(void) {
     printf(" 0 - Назад\n");
     printf("> ");
 
-    /* ИСПРАВЛЕНО: читаем int, а не char — иначе двузначные номера недостижимы */
     int op;
     if (scanf("%d", &op) != 1) { printf("ОШИБКА: введите номер операции\n"); exit(1); }
     while (getchar() != '\n');
