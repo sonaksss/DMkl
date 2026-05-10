@@ -21,8 +21,7 @@ static NUMBQ* createRationalFromInt(int value) {
     NUMBQ* q = (NUMBQ*)malloc(sizeof(NUMBQ));
     if (!q) return NULL;
 
-    /* Числитель NUMBZ */
-    q->a.b = (value >= 0) ? 0 : 1; /* 0 — положительное/ноль, 1 — отрицательное */
+    q->a.b = (value >= 0) ? 0 : 1;
     int absVal = (value < 0) ? -value : value;
 
     if (absVal == 0) {
@@ -31,7 +30,6 @@ static NUMBQ* createRationalFromInt(int value) {
         if (!q->a.A) { free(q); return NULL; }
         q->a.A[0] = 0;
     } else {
-        /* Считаем количество цифр */
         int tmp = absVal;
         int digits = 0;
         while (tmp > 0) { digits++; tmp /= 10; }
@@ -40,7 +38,6 @@ static NUMBQ* createRationalFromInt(int value) {
         q->a.A = (int*)malloc(digits * sizeof(int));
         if (!q->a.A) { free(q); return NULL; }
 
-        /* Записываем цифры: A[0] — младший разряд */
         tmp = absVal;
         for (int i = 0; i < digits; i++) {
             q->a.A[i] = tmp % 10;
@@ -48,7 +45,6 @@ static NUMBQ* createRationalFromInt(int value) {
         }
     }
 
-    /* Знаменатель NUMBN = 1 */
     q->b.n = 1;
     q->b.A = (int*)malloc(sizeof(int));
     if (!q->b.A) { free(q->a.A); free(q); return NULL; }
@@ -76,13 +72,10 @@ static NUMBQ* mulRationalByInt(NUMBQ* q, int factor) {
     NUMBQ* result = (NUMBQ*)malloc(sizeof(NUMBQ));
     if (!result) return NULL;
 
-    /* Знак результата совпадает со знаком исходного числителя */
     result->a.b = q->a.b;
 
-    /* Умножаем числитель на factor — длинная арифметика */
     int n = q->a.n;
-    /* Максимально возможное число разрядов после умножения на factor */
-    int maxDigits = n + 10; /* запас */
+    int maxDigits = n + 10;
     result->a.A = (int*)calloc(maxDigits, sizeof(int));
     if (!result->a.A) { free(result); return NULL; }
 
@@ -93,16 +86,14 @@ static NUMBQ* mulRationalByInt(NUMBQ* q, int factor) {
         result->a.A[i] = prod % 10;
         carry = prod / 10;
     }
-    /* Остаток переноса */
     while (carry > 0) {
         result->a.A[i] = carry % 10;
         carry /= 10;
         i++;
     }
     result->a.n = i;
-    if (result->a.n == 0) result->a.n = 1; /* хотя бы одна цифра */
+    if (result->a.n == 0) result->a.n = 1;
 
-    /* Знаменатель копируем без изменений */
     result->b.n = q->b.n;
     result->b.A = (int*)malloc(q->b.n * sizeof(int));
     if (!result->b.A) { free(result->a.A); free(result); return NULL; }
@@ -153,7 +144,6 @@ NUMBP* DER_P_P(NUMBP* p) {
     NUMBP* deriv = (NUMBP*)malloc(sizeof(NUMBP));
     if (!deriv) return NULL;
 
-    /* Производная константы — нулевой многочлен степени 0 */
     if (p->m == 0) {
         deriv->m = 0;
         deriv->C = (NUMBQ*)malloc(sizeof(NUMBQ));
@@ -167,21 +157,15 @@ NUMBP* DER_P_P(NUMBP* p) {
         return deriv;
     }
 
-    /* Степень производной на 1 меньше */
     int newDegree = p->m - 1;
 
     deriv->C = (NUMBQ*)malloc((newDegree + 1) * sizeof(NUMBQ));
     if (!deriv->C) { free(deriv); return NULL; }
 
-    /*
-      Коэффициент i-го члена производной (0 <= i <= m-1):
-        deriv->C[i] = (i+1) * p->C[i+1]
-    */
     for (int i = 0; i <= newDegree; i++) {
-        int multiplier = i + 1; /* степень исходного члена */
+        int multiplier = i + 1;
         NUMBQ* coeff = mulRationalByInt(&p->C[i + 1], multiplier);
         if (!coeff) {
-            /* Освобождаем уже выделенные коэффициенты */
             for (int j = 0; j < i; j++) {
                 free(deriv->C[j].a.A);
                 free(deriv->C[j].b.A);
@@ -194,10 +178,6 @@ NUMBP* DER_P_P(NUMBP* p) {
         free(coeff);
     }
 
-    /*
-      Убираем старшие нулевые коэффициенты (нормализация),
-      но степень не может быть ниже 0.
-    */
     int actualDegree = newDegree;
     while (actualDegree > 0 && isZeroRational(&deriv->C[actualDegree])) {
         free(deriv->C[actualDegree].a.A);

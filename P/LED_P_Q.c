@@ -45,7 +45,6 @@ NUMBQ* LED_P_Q(NUMBP* p) {
         return NULL;
     }
 
-    /* Глубокая копия числителя (NUMBZ) */
     result->a.b = p->C[p->m].a.b;
     result->a.n = p->C[p->m].a.n;
     result->a.A = (int*)malloc(result->a.n * sizeof(int));
@@ -55,7 +54,6 @@ NUMBQ* LED_P_Q(NUMBP* p) {
     }
     memcpy(result->a.A, p->C[p->m].a.A, result->a.n * sizeof(int));
 
-    /* Глубокая копия знаменателя (NUMBN) */
     result->b.n = p->C[p->m].b.n;
     result->b.A = (int*)malloc(result->b.n * sizeof(int));
     if (result->b.A == NULL) {

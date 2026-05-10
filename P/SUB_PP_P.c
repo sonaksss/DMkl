@@ -100,10 +100,8 @@ NUMBP* SUB_PP_P(NUMBP* A, NUMBP* B) {
     if (A == NULL || B == NULL)
         return NULL;
 
-    /* Максимальная степень результата */
     int maxDeg = (A->m > B->m) ? A->m : B->m;
 
-    /* Выделение памяти под результирующий многочлен */
     NUMBP* result = (NUMBP*)malloc(sizeof(NUMBP));
     if (result == NULL)
         return NULL;
@@ -115,13 +113,11 @@ NUMBP* SUB_PP_P(NUMBP* A, NUMBP* B) {
         return NULL;
     }
 
-    /* Инициализация указателей для безопасного освобождения при ошибке */
     for (int i = 0; i <= maxDeg; i++) {
         result->C[i].a.A = NULL;
         result->C[i].b.A = NULL;
     }
 
-    /* Временный нулевой коэффициент 0/1 */
     NUMBQ zeroQ;
     if (!makeZeroQ(&zeroQ)) {
         free(result->C);
@@ -129,14 +125,12 @@ NUMBP* SUB_PP_P(NUMBP* A, NUMBP* B) {
         return NULL;
     }
 
-    /* Вычисление разности коэффициентов */
     for (int i = 0; i <= maxDeg; i++) {
         NUMBQ* coeffA = (i <= A->m) ? &A->C[i] : &zeroQ;
         NUMBQ* coeffB = (i <= B->m) ? &B->C[i] : &zeroQ;
 
         NUMBQ* diff = SUB_QQ_Q(coeffA, coeffB);
         if (diff == NULL) {
-            /* Освобождение уже вычисленных коэффициентов */
             for (int j = 0; j < i; j++) {
                 free(result->C[j].a.A);
                 free(result->C[j].b.A);
@@ -149,16 +143,13 @@ NUMBP* SUB_PP_P(NUMBP* A, NUMBP* B) {
             return NULL;
         }
 
-        /* Копирование коэффициента в результат */
         result->C[i] = *diff;
         free(diff);
     }
 
-    /* Освобождение временного коэффициента */
     free(zeroQ.a.A);
     free(zeroQ.b.A);
 
-    /* Удаление ведущих нулей */
     trimDegree(result);
 
     return result;

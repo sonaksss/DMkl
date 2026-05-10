@@ -70,7 +70,6 @@ NUMBQ* FAC_P_Q(NUMBP* p) {
         return NULL;
     }
     
-    /* шаг 1: НОД числителей */
     NUMBN* gcdNum = TRANS_Z_N(ABS_Z_Z(&p->C[firstNonZero].a));
     if (!gcdNum) return NULL;
 
@@ -93,7 +92,6 @@ NUMBQ* FAC_P_Q(NUMBP* p) {
         gcdNum = newGcd;
     }
 
-    /* шаг 2: НОК знаменателей */
     NUMBN* lcmDen = copyNatural(&p->C[firstNonZero].b);
     if (!lcmDen) {
         free(gcdNum->A); free(gcdNum);
@@ -112,7 +110,6 @@ NUMBQ* FAC_P_Q(NUMBP* p) {
         lcmDen = newLcm;
     }
 
-    /* шаг 3: собираем NUMBQ */
     NUMBQ* result = (NUMBQ*)malloc(sizeof(NUMBQ));
     if (!result) {
         free(gcdNum->A); free(gcdNum);
@@ -127,7 +124,6 @@ NUMBQ* FAC_P_Q(NUMBP* p) {
     result->a.A = gcdNum->A;
     free(gcdNum);
 
-    /* шаг 4: знак = знак старшего ненулевого коэффициента */
     result->a.b = 0;
     for (int i = p->m; i >= 0; i--) {
         if (!(p->C[i].a.n == 1 && p->C[i].a.A[0] == 0)) {
