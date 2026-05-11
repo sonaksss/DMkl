@@ -4,7 +4,7 @@
 #include <limits.h>
 #include <errno.h>
 
-/* ========== Функции освобождения памяти ========== */
+//функции освобождения памяти
 
 void freeNUMBN(NUMBN* num) {
     if (num) {
@@ -50,15 +50,15 @@ void freeNUMBP(NUMBP* poly) {
     }
 }
 
-/* ========== Функции проверки ошибок ========== */
+//функции проверки ошибок
 
-int isErrorN(NUMBN* num) { return num == NULL; }
-int isErrorZ(NUMBZ* num) { return num == NULL; }
+int isErrorN(NUMBN* num) { return num == NULL;}
+int isErrorZ(NUMBZ* num) {return num == NULL;}
 int isErrorQ(NUMBQ* num) {
     if (!num) return 1;
     return (!num->a.A || !num->b.A);
 }
-int isErrorP(NUMBP* poly) { return poly == NULL; }
+int isErrorP(NUMBP* poly){ return poly == NULL;}
 
 int isZeroN(NUMBN* num) {
     if (!num || !num->A || num->n <= 0) return 1;
@@ -70,25 +70,34 @@ int isZeroBZ(NUMBZ* num) {
     return (num->n == 1 && num->A[0] == 0);
 }
 
-/* ========== Вспомогательные функции ввода ========== */
+//вспомогательные функции ввода
 
 static int* inputString(int* len) {
     char ch;
     char* arr = NULL;
+    int capacity = 10;
     char* temp_arr = NULL;
     int* numb = NULL;
     *len = 0;
 
     printf(": ");
+	
+    arr = (char*)malloc(capacity);
+    if (!arr) {
+        printf("ОШИБКА: нет памяти\n");
+        return NULL; 
+    }
 
     do {
-        if (*len == 0) {
-            arr = (char*)malloc(sizeof(char));
-            if (!arr) { printf("ОШИБКА: нет памяти\n"); return NULL; }
-        } else {
-            temp_arr = (char*)realloc(arr, (*len + 1) * sizeof(char));
-            if (!temp_arr) { printf("ОШИБКА: нет памяти\n"); free(arr); return NULL; }
-            arr = temp_arr;
+	if (*len + 1 >= capacity){
+	   capacity *= 2;
+	   temp_arr = (char*)realloc(arr, capacity * sizeof(char));
+           if (!temp_arr) {
+	       printf("ОШИБКА: нет памяти\n");
+	       free(arr);
+	       return NULL;
+	   }
+           arr = temp_arr;
         }
 
         scanf("%c", &ch);
@@ -110,14 +119,21 @@ static int* inputString(int* len) {
         }
     } while (ch != '\n');
 
-    if (*len == 0) { free(arr); return NULL; }
+    if (*len == 0) {
+	free(arr); 
+	return NULL;
+    }
 
     int start = 0;
     while (start < *len - 1 && arr[start] == '0') start++;
 
     *len = *len - start;
     numb = (int*)malloc((*len) * sizeof(int));
-    if (!numb) { printf("ОШИБКА: нет памяти\n"); free(arr); return NULL; }
+    if (!numb) {
+        printf("ОШИБКА: нет памяти\n");
+        free(arr);
+        return NULL;
+    }
 
     for (int i = 0; i < *len; i++)
         numb[i] = arr[*len - 1 - i + start] - '0';
@@ -136,15 +152,27 @@ static NUMBZ* inputZString(const char* prompt) {
     char* temp_arr = NULL;
     int len = 0;
 
-    do { scanf("%c", &ch); } while (ch == ' ' || ch == '\t');
+    do {
+	scanf("%c", &ch);
+    } while (ch == ' ' || ch == '\t');
 
-    if (ch == '+')      { sign = 0; scanf("%c", &ch); }
-    else if (ch == '-') { sign = 1; scanf("%c", &ch); }
+    if (ch == '+') {
+        sign = 0;
+	scanf("%c", &ch);
+    }
+    else if (ch == '-') {
+	sign = 1;
+	scanf("%c", &ch);
+    }
 
     while (ch >= '0' && ch <= '9') {
         has_digit = 1;
-        temp_arr = (char*)realloc(arr, (len + 1) * sizeof(char));
-        if (!temp_arr) { printf("ОШИБКА: нет памяти\n"); free(arr); exit(1); }
+        temp_arr = (char*)realloc(arr, (len + 1) * sizeof(char)); 
+	if (!temp_arr) {
+		printf("ОШИБКА: нет памяти\n");
+		free(arr);
+		exit(1);
+	}
         arr = temp_arr;
         arr[len++] = ch;
         scanf("%c", &ch);
@@ -182,7 +210,7 @@ static NUMBZ* inputZString(const char* prompt) {
     return result;
 }
 
-/* ========== Функции ввода ========== */
+//функции ввода
 
 NUMBN* inputN(const char* prompt) {
     printf("%s", prompt);
@@ -212,14 +240,25 @@ NUMBQ* inputQ(const char* prompt) {
     int numerator_len = 0, denominator_len = 0;
     int has_slash = 0, sign = 0;
 
-    do { scanf("%c", &ch); } while (ch == ' ' || ch == '\t');
+    do {
+	scanf("%c", &ch);
+    } while (ch == ' ' || ch == '\t');
 
-    if (ch == '+')      { sign = 0; scanf("%c", &ch); }
-    else if (ch == '-') { sign = 1; scanf("%c", &ch); }
+    if (ch == '+') {
+	sign = 0;
+	scanf("%c", &ch);
+    }
+    else if (ch == '-') {
+	    sign = 1;
+	    scanf("%c", &ch);
+    }
 
     while (ch >= '0' && ch <= '9') {
         char* tmp = (char*)realloc(numerator_str, (numerator_len + 1) * sizeof(char));
-        if (!tmp) { free(numerator_str); exit(1); }
+        if (!tmp) {
+	     free(numerator_str);
+	     exit(1);
+	}
         numerator_str = tmp;
         numerator_str[numerator_len++] = ch;
         scanf("%c", &ch);
@@ -229,9 +268,14 @@ NUMBQ* inputQ(const char* prompt) {
         has_slash = 1;
         scanf("%c", &ch);
         while (ch == ' ' || ch == '\t') scanf("%c", &ch);
-        while (ch >= '0' && ch <= '9') {
+        
+	while (ch >= '0' && ch <= '9') {
             char* tmp = (char*)realloc(denominator_str, (denominator_len + 1) * sizeof(char));
-            if (!tmp) { free(numerator_str); free(denominator_str); exit(1); }
+            if (!tmp) {
+		free(numerator_str);
+		free(denominator_str);
+		exit(1);
+	    }
             denominator_str = tmp;
             denominator_str[denominator_len++] = ch;
             scanf("%c", &ch);
@@ -307,14 +351,12 @@ NUMBP* inputP(const char* prompt) {
     }
     while (getchar() != '\n');
 
-    /* Выделяем массив коэффициентов, заполняем нулями */
     NUMBP* result = (NUMBP*)malloc(sizeof(NUMBP));
     if (!result) { printf("ОШИБКА: нет памяти\n"); exit(1); }
     result->m = degree;
     result->C = (NUMBQ*)malloc((degree + 1) * sizeof(NUMBQ));
     if (!result->C) { free(result); printf("ОШИБКА: нет памяти\n"); exit(1); }
 
-    /* Инициализируем все коэффициенты нулём (0/1) */
     for (int i = 0; i <= degree; i++) {
         result->C[i].a.b = 0;
         result->C[i].a.n = 1;
@@ -431,7 +473,7 @@ NUMBP* inputP(const char* prompt) {
     return result;
 }
 
-/* ========== Функции вывода ========== */
+//функции вывода
 
 void printN(NUMBN* num) {
     if (!num || !num->A || num->n <= 0) { printf("(ошибка)"); return; }
@@ -520,7 +562,7 @@ void printP(NUMBP* poly) {
     if (first) printf("0");
 }
 
-/* ========== Меню для натуральных чисел ========== */
+//меню для натуральных чисел
 void menuN(void) {
     printf("\n========== НАТУРАЛЬНЫЕ ЧИСЛА ==========\n");
     printf(" 1 - COM_NN_D   (Сравнение)\n");
@@ -696,7 +738,7 @@ void menuN(void) {
     }
 }
 
-/* ========== Меню для целых чисел ========== */
+//меню для целых чисел
 void menuZ(void) {
     printf("\n========== ЦЕЛЫЕ ЧИСЛА ==========\n");
     printf(" 1 - ABS_Z_Z   (Абсолютная величина)\n");
@@ -805,7 +847,7 @@ void menuZ(void) {
     }
 }
 
-/* ========== Меню для рациональных чисел ========== */
+//меню для рациональных чисел
 void menuQ(void) {
     printf("\n========== РАЦИОНАЛЬНЫЕ ЧИСЛА ==========\n");
     printf("1 - RED_Q_Q   (Сокращение дроби)\n");
@@ -900,7 +942,7 @@ void menuQ(void) {
     }
 }
 
-/* ========== Меню для многочленов ========== */
+//меню для многочленов
 void menuP(void) {
     printf("\n========== МНОГОЧЛЕНЫ ==========\n");
     printf(" 1 - ADD_PP_P   (Сложение)\n");
@@ -971,15 +1013,23 @@ void menuP(void) {
 
     } else if (op == 6) {
         NUMBP* a = inputP("Введите многочлен: ");
-        NUMBN* res = DEG_P_N(a);
-        if (!res) { printf("ОШИБКА\n"); freeNUMBP(a); exit(1); }
-        printf("Степень: "); printN(res); printf("\n");
-        freeNUMBP(a); freeNUMBN(res);
+        int res = DEG_P_N(a);
+        if (res < 0) {
+	    printf("ОШИБКА\n");
+	    freeNUMBP(a);
+	    exit(1);
+	}
+        printf("Степень: %d\n", res);
+        freeNUMBP(a);
 
     } else if (op == 7) {
         NUMBP* a = inputP("Введите многочлен: ");
         NUMBQ* res = FAC_P_Q(a);
-        if (!res) { printf("ОШИБКА\n"); freeNUMBP(a); exit(1); }
+        if (!res) {
+	    printf("ОШИБКА\n");
+	    freeNUMBP(a);
+	    exit(1);
+	}
         printf("Вынесенный множитель: "); printQ(res); printf("\n");
         freeNUMBP(a); freeNUMBQ(res);
 
