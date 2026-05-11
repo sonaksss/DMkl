@@ -5,8 +5,8 @@
     Коэффициенты хранятся от младшей степени к старшей (C[0] – свободный член).
 
     Параметры:
-        1) const NUMBP* A – делимое (многочлен)
-        2) const NUMBP* B – делитель (ненулевой многочлен)
+        1) NUMBP* A – делимое (многочлен)
+        2) NUMBP* B – делитель (ненулевой многочлен)
 
     Возвращает: NUMBP* – частное Q = A / B, или NULL при ошибке
 
@@ -96,31 +96,23 @@ static void freeQ(NUMBQ* q) {
     free(q);
 }
 
-static int numbn_to_int(NUMBN* num) {
-    if (!num || num->n > 10) return -1;
-    int res = 0, mult = 1;
-    for (int i = 0; i < num->n; i++) {
-        res += num->A[i] * mult;
-        mult *= 10;
+static int isZeroP(NUMBP* p) {
+    if (!p || !p->C) return 1;
+    for (int i = 0; i <= p->m; i++) {
+        if (!p->C[i].a.A) continue;
+        for (int j = 0; j < p->C[i].a.n; j++) {
+            if (p->C[i].a.A[j] != 0) return 0;
+        }
     }
-    return res;
+    return 1;
 }
 
 NUMBP* DIV_PP_P(NUMBP* A, NUMBP* B) {
     if (!A || !B) return NULL;
 
-    NUMBN* degA = DEG_P_N(A);
-    NUMBN* degB = DEG_P_N(B);
-    if (!degA || !degB) {
-        if (degA) { free(degA->A); free(degA); }
-        if (degB) { free(degB->A); free(degB); }
-        return NULL;
-    }
-    int a = numbn_to_int(degA);
-    int b = numbn_to_int(degB);
-    free(degA->A); free(degA);
-    free(degB->A); free(degB);
-    if (a < 0 || b < 0) return NULL;
+    int a = DEG_P_N(A);
+    int b = DEG_P_N(B);
+    if (a < 0 || b < 0) return NULL;   // ошибка в степени
     if (a < b) return createZeroP();
 
     NUMBP* R = copyP(A);
@@ -128,22 +120,12 @@ NUMBP* DIV_PP_P(NUMBP* A, NUMBP* B) {
     NUMBP* Q = createZeroP();
     if (!Q) { freeP(R); return NULL; }
 
-    while (1) {
-        NUMBN* degR = DEG_P_N(R);
-        NUMBN* degB2 = DEG_P_N(B);
-        if (!degR || !degB2) {
-            if (degR) { free(degR->A); free(degR); }
-            if (degB2) { free(degB2->A); free(degB2); }
-            freeP(R); freeP(Q);
-            return NULL;
-        }
-        int r = numbn_to_int(degR);
-        int b2 = numbn_to_int(degB2);
-        free(degR->A); free(degR);
-        free(degB2->A); free(degB2);
-        if (r < b2) break;
+    while (!isZeroP(R)) {
+        int r = DEG_P_N(R);
+        if (r < 0) { freeP(R); freeP(Q); return NULL; }
+        if (r < b) break;
 
-        int k = r - b2;
+        int k = r - b;
 
         NUMBQ* ledR = LED_P_Q(R);
         NUMBQ* ledB = LED_P_Q(B);
