@@ -1,6 +1,8 @@
 #ifndef _DEG_P_N_H_
 #define _DEG_P_N_H_
 
+#include "numbP.h"
+#include "numbN.h"
 
 /*
   DEG_P_N (P-6)

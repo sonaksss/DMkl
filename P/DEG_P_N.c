@@ -1,4 +1,5 @@
-#include "../include_DM.h"
+#include <stdlib.h>
+#include "DEG_P_N.h"
 
 /*
   Автор: Нигай Борис
